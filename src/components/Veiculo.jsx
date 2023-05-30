@@ -1,9 +1,10 @@
 //Crud
 //Pesquisa - Read
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button, Form, InputGroup, Table } from 'react-bootstrap'
 import styles from './Veiculo.module.css'
+import api from "../service/api"
 
 
 function Veiculo() {
@@ -11,37 +12,47 @@ function Veiculo() {
   let [marca, setMarca] = useState("")
   let [modelo, setModelo] = useState("")
   let [ano, setAno] = useState("")
-  let [cor, setCor] = useState("")
+  let [placa, setPlaca] = useState("")
 
-  function salvar(){
+  async function salvar() {
 
     let veiculo = {
 
       marca: marca,
       modelo: modelo,
-      ano: ano,
-      cor: cor,
+      ano: Number(ano),
+      placa: placa,
     }
 
-    veiculos.push(veiculo)
+    const resposta = await api.post('/veiculos', veiculo)
+      .catch((e) => {
+        alert(e.response.data.msg)
+      })
+    veiculos.push(resposta.data)
 
     setVeiculos([...veiculos])
+
+
     limparForm()
 
   }
-  function limparForm (){
-    setMarca  ("")
-    setModelo ("")
-    setAno ("")
-    setCor ("")
+  function limparForm() {
+    setMarca("")
+    setModelo("")
+    setAno("")
+    setPlaca("")
 
 
   }
 
-  function excluir(veiculo){
+  async function excluir(veiculo) {
 
-    veiculos.forEach((v, i)=>{
-      if(veiculo.marca == v.marca) {
+
+   const resposta = await api.delete(`/veiculos/${veiculo.placa}`)
+   
+   
+    veiculos.forEach((v, i) => {
+      if (resposta.data.placa == v.placa) {
 
         veiculos.splice(i, 1)
 
@@ -49,55 +60,71 @@ function Veiculo() {
       }
 
     })
-      setVeiculos([...veiculos])
+    setVeiculos([...veiculos])
   }
 
+  useEffect(() => {
 
+    buscarVeiculos()
+
+  }, [])
+
+  async function buscarVeiculos() {
+
+    const resposta = await api.get('/veiculos')
+    alert(resposta.status)
+
+    setVeiculos(resposta.data)
+
+
+  }
 
   return (
     <div className={styles.main}>
 
       <h1>Veiculo</h1>
-      
-        
-        <Form.Control
-          value={marca}
-          onChange={(e)=>{setMarca(e.target.value)}}
-          placeholder="Marca"
-          aria-label="Marca"
-          aria-
-          describedby="basic-addon1"
-        />
-        <Form.Control
-          value={modelo}
-          onChange={(e)=>{setModelo(e.target.value)}}
-          placeholder="Modelo"
-          aria-label="Modelo"
-          aria-describedby="basic-addon1"
-        />
-        <Form.Control
-          value={ano}
-          onChange={(e)=>{setAno(e.target.value)}}
-          placeholder="Ano"
-          aria-label="Ano"
-          aria-describedby="basic-addon1"
-        />
-        <Form.Control
-        value={cor}
-        onChange={(e)=>{setCor(e.target.value)}}
-          placeholder="Cor"
-          aria-label="Cor"
-          aria-describedby="basic-addon1"
-        />
-      
+      <Form.Control
+        value={placa}
+        onChange={(e) => { setPlaca(e.target.value) }}
+        placeholder="placa"
+        aria-label="placa"
+        aria-describedby="basic-addon1"
+      />
+
+
+      <Form.Control
+        value={marca}
+        onChange={(e) => { setMarca(e.target.value) }}
+        placeholder="Marca"
+        aria-label="Marca"
+        aria-
+        describedby="basic-addon1"
+      />
+      <Form.Control
+        value={modelo}
+        onChange={(e) => { setModelo(e.target.value) }}
+        placeholder="Modelo"
+        aria-label="Modelo"
+        aria-describedby="basic-addon1"
+      />
+      <Form.Control
+        value={ano}
+        onChange={(e) => { setAno(e.target.value) }}
+        placeholder="Ano"
+        aria-label="Ano"
+        aria-describedby="basic-addon1"
+      />
+
+
       <Button onClick={salvar}>Salvar</Button>
       <Table striped bordered hover variant="dark">
         <thead>
           <tr>
+            <td>Placa</td>
             <td>Marca</td>
             <td>Modelo</td>
             <td>Ano</td>
-            <td>Cor</td>
+
             <td></td>
           </tr>
         </thead>
@@ -115,20 +142,20 @@ function Veiculo() {
               return (
 
                 <tr key={i}>
+                  <td>{veiculo.placa}</td>
                   <td>{veiculo.marca}</td>
                   <td>{veiculo.modelo}</td>
                   <td>{veiculo.ano}</td>
-                  <td>{veiculo.cor}</td>
                   <td>
-                    <button onClick={()=>{excluir(veiculo)}}>X</button>
+                    <button onClick={() => { excluir(veiculo) }}>X</button>
                   </td>
                 </tr>
 
               )
 
             })
-          
-        }
+
+          }
         </tbody>
       </Table>
 
